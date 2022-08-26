@@ -1,0 +1,52 @@
+name: 'Commit Message Check'
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-commit-message:
+    name: Check Commit Message
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Check Commit Type
+        uses: gsactions/commit-message-checker@v1
+        with:
+          pattern: '^\bbuild\b|\bchore\b|\bci\b|\bdocs\b|\bfeat\b|\bfix\b|\bperf\b|\brefactor\b|\brevert\b|\bstyle\b|\btest\b(\([a-z ]+\)!)?: [\w ]+$'
+          flags: 'gm'
+          error: 'Must follow conventional commit standards.'
+          checkAllCommitMessages: 'true'
+          accessToken: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment success on PR
+        if: success()
+        uses: marocchino/sticky-pull-request-comment@v2.2.0
+        with:
+          header: pr-conventional-commit-check
+          delete: true
+
+      - name: Comment failure on PR
+        if: failure()
+        uses: marocchino/sticky-pull-request-comment@v2.2.0
+        with:
+          recreate: true
+          header: pr-conventional-commit-check
+          message: |
+            ## ✋ Non-conventional commit messages detected.
+
+            Some commit messages in this PR do not follow Conventional Commit standards.
+
+            Please revise these commits locally using one of the following methods:
+
+            - `git commit --amend` - rewrite the message of the LAST commit using your text editor
+            - `git rebase -i HEAD~<N>` - rebase interactively the previous `N` commits.
+              - Choose the `reword` option beside the commit(s) with incorrect formatting.
+            - `git reset --soft HEAD~<N>` - reset your branch back `N` commits.
+              - All changes from reset commits will remain staged.
+              - You can write *new* commits from those staged changes.
+
+            After **any** of the above changes, use `git push --force-with-lease` to push your new commits.
