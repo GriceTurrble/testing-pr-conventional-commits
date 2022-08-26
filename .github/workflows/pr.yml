@@ -18,7 +18,11 @@ jobs:
         with:
           pattern: '^\bbuild\b|\bchore\b|\bci\b|\bdocs\b|\bfeat\b|\bfix\b|\bperf\b|\brefactor\b|\brevert\b|\bstyle\b|\btest\b(\([a-z ]+\)!)?: [\w ]+$'
           flags: 'gm'
-          error: 'Must follow conventional commit standards.'
+          error: 'One or more commit messages in this PR do not follow Conventional Commit standard.'
+          # ONLY CHECK COMMITS
+          # Why does this have to be a thing?
+          excludeTitle: 'true'
+          excludeDescription: 'true'
           checkAllCommitMessages: 'true'
           accessToken: ${{ secrets.GITHUB_TOKEN }}
 
